@@ -130,7 +130,6 @@ Future enhancements for this project include:
 - Optimizing SQL queries for larger datasets.
 
 ## Author
-
-Kaushikee Sharma
+hanee mishra
 
 Aspiring Data Analyst passionate about transforming raw data into meaningful business insights through SQL, Excel, Power BI, and Python.
