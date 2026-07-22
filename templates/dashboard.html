@@ -1,0 +1,294 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>COVID-19 Dashboard</title>
+    <link rel="stylesheet" href="/static/dashboard.css" />
+  </head>
+  <body>
+    <div class="page-shell dashboard-shell">
+      <header class="topbar">
+        <div class="nav-brand">
+          <span class="brand-badge">Dashboard</span>
+          <div>
+            <h1>COVID-19 Analytics</h1>
+            <p>Interactive views for infection and death trends across the dataset.</p>
+          </div>
+        </div>
+        <nav class="top-nav" aria-label="Primary">
+          <a href="/" class="nav-link">Home</a>
+          <a href="/predict" class="nav-link">Predict</a>
+          <a href="/dashboard" class="nav-link active" aria-current="page">Dashboard</a>
+        </nav>
+      </header>
+
+      <aside class="dashboard-sidebar">
+        <div class="sidebar-card sidebar-card-quicklinks">
+          <div class="card-header">
+            <h3>Quick links</h3>
+            <p>Jump to common views and refresh the dashboard instantly.</p>
+          </div>
+          <div class="quick-actions">
+            <a href="/" class="button button-secondary">Home</a>
+            <a href="/predict" class="button button-secondary">Predict</a>
+            <a href="/dashboard" class="button button-secondary">Refresh</a>
+          </div>
+        </div>
+
+        <form id="filterForm" class="filter-group" action="/dashboard" method="GET">
+          <h3>Filters</h3>
+          <label for="continentFilter">Continent</label>
+          <select id="continentFilter" name="continent">
+            <option value="All" {% if request.args.get('continent', 'All') == 'All' %}selected{% endif %}>All</option>
+            {% for continent in continents %}
+            <option value="{{ continent }}" {% if request.args.get('continent') == continent %}selected{% endif %}>{{ continent }}</option>
+            {% endfor %}
+          </select>
+          <label for="startDate">Date range</label>
+          <div class="date-pair">
+            <input type="date" id="startDate" name="start_date" value="{{ start_date }}" aria-label="Start date" />
+            <input type="date" id="endDate" name="end_date" value="{{ end_date }}" aria-label="End date" />
+          </div>
+          <button id="applyButton" class="button button-primary" type="submit">Apply</button>
+        </form>
+      </aside>
+
+      <main class="dashboard-main">
+        <section class="summary-grid">
+          <div class="summary-card card-purple">
+            <span>Total Cases</span>
+            <h3>{{ totals.total_cases_str }}</h3>
+          </div>
+          <div class="summary-card card-red">
+            <span>Total Deaths</span>
+            <h3>{{ totals.total_deaths_str }}</h3>
+          </div>
+          <div class="summary-card card-blue">
+            <span>Death Rate</span>
+            <h3>{{ totals.death_rate }}%</h3>
+          </div>
+          <div class="summary-card card-teal">
+            <span>Countries</span>
+            <h3>{{ totals.country_count }}</h3>
+          </div>
+        </section>
+
+        <section class="chart-grid">
+          <div class="chart-card">
+            <h3 id="infectionChartLabel">Top countries by total cases</h3>
+            <div class="chart-frame">
+              <canvas id="infectionChart" role="img" aria-labelledby="infectionChartLabel"></canvas>
+            </div>
+          </div>
+          <div class="chart-card">
+            <h3 id="deathChartLabel">Top countries by total deaths</h3>
+            <div class="chart-frame">
+              <canvas id="deathChart" role="img" aria-labelledby="deathChartLabel"></canvas>
+            </div>
+          </div>
+          <div class="chart-card">
+            <h3 id="continentChartLabel">Death share by continent</h3>
+            <div class="chart-frame">
+              <canvas id="continentChart" role="img" aria-labelledby="continentChartLabel"></canvas>
+            </div>
+          </div>
+          <div class="chart-card">
+            <h3 id="trendChartLabel">Recent daily trend</h3>
+            <div class="chart-frame">
+              <canvas id="trendChart" role="img" aria-labelledby="trendChartLabel"></canvas>
+            </div>
+          </div>
+        </section>
+
+        <section class="table-section">
+          <div class="table-header">
+            <h3 id="tableCaption">Country summary table</h3>
+            <input type="search" id="countrySearch" placeholder="Search country" aria-label="Search country" />
+          </div>
+          <div class="table-wrapper">
+            <table aria-labelledby="tableCaption">
+              <thead>
+                <tr>
+                  <th>Country</th>
+                  <th>Continent</th>
+                  <th>Total Cases</th>
+                  <th>Total Deaths</th>
+                </tr>
+              </thead>
+              <tbody id="countryTable"></tbody>
+            </table>
+            <p id="noResults" class="no-results" hidden>No countries match your search.</p>
+          </div>
+        </section>
+      </main>
+    </div>
+
+    <div id="loadingOverlay" class="loading-overlay" aria-hidden="true">
+      <div class="loading-box">Loading dashboard…</div>
+    </div>
+
+    <!-- Moved out of <head>: a render-blocking <script src> there delays first
+         paint of the whole page. Placed here (still before the inline script
+         that depends on it, and without `defer`) so it downloads after the
+         page content but Chart is still guaranteed to exist before it's used. -->
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    <script>
+      window.addEventListener('DOMContentLoaded', () => {
+        const chartData = {{ chart_data | tojson }};
+        const tableData = {{ table_data | tojson }};
+        const countryTable = document.getElementById('countryTable');
+        const noResults = document.getElementById('noResults');
+        const filterForm = document.getElementById('filterForm');
+        const applyButton = document.getElementById('applyButton');
+        const loadingOverlay = document.getElementById('loadingOverlay');
+
+        function formatNumber(value) {
+          return Number(value).toLocaleString();
+        }
+
+        function escapeHtml(value) {
+          return String(value)
+            .replace(/&/g, '&amp;')
+            .replace(/</g, '&lt;')
+            .replace(/>/g, '&gt;')
+            .replace(/"/g, '&quot;');
+        }
+
+        function renderTable(rows) {
+          countryTable.innerHTML = rows
+            .map((row) => `
+              <tr>
+                <td>${escapeHtml(row.location)}</td>
+                <td>${escapeHtml(row.continent)}</td>
+                <td>${formatNumber(row.total_cases)}</td>
+                <td>${formatNumber(row.total_deaths)}</td>
+              </tr>
+            `)
+            .join('');
+          noResults.hidden = rows.length !== 0;
+        }
+
+        renderTable(tableData);
+
+        document.getElementById('countrySearch').addEventListener('input', (event) => {
+          const term = event.target.value.toLowerCase();
+          const filtered = tableData.filter((row) => row.location.toLowerCase().includes(term));
+          renderTable(filtered);
+        });
+
+        filterForm.addEventListener('submit', (e) => {
+          const start = document.getElementById('startDate').value;
+          const end = document.getElementById('endDate').value;
+          if (start && end) {
+            const s = new Date(start);
+            const en = new Date(end);
+            if (en < s) {
+              e.preventDefault();
+              alert('End date must be the same as or after the start date.');
+              return;
+            }
+          }
+          loadingOverlay.classList.add('active');
+          loadingOverlay.setAttribute('aria-hidden', 'false');
+          applyButton.disabled = true;
+        });
+
+        const sharedOptions = {
+          responsive: true,
+          maintainAspectRatio: false,
+          plugins: {
+            legend: { labels: { boxWidth: 14, padding: 12 } },
+          },
+        };
+
+        const infectionCtx = document.getElementById('infectionChart');
+        const deathCtx = document.getElementById('deathChart');
+        const continentCtx = document.getElementById('continentChart');
+        const trendCtx = document.getElementById('trendChart');
+
+        if (infectionCtx && deathCtx && continentCtx && trendCtx) {
+          new Chart(infectionCtx, {
+            type: 'bar',
+            data: {
+              labels: chartData.top_cases.map((row) => row.location),
+              datasets: [{
+                label: 'Total cases',
+                data: chartData.top_cases.map((row) => row.total_cases),
+                backgroundColor: ['#6C5CE7', '#00B894', '#FD79A8', '#0984E3', '#FDCB6E', '#00cec9'],
+                borderRadius: 12,
+              }],
+            },
+            options: {
+              ...sharedOptions,
+              plugins: { legend: { display: false } },
+              scales: { y: { beginAtZero: true } },
+            },
+          });
+
+          new Chart(deathCtx, {
+            type: 'bar',
+            data: {
+              labels: chartData.top_deaths.map((row) => row.location),
+              datasets: [{
+                label: 'Total deaths',
+                data: chartData.top_deaths.map((row) => row.total_deaths),
+                backgroundColor: ['#d63031', '#0984E3', '#fdcb6e', '#6c5ce7', '#00b894', '#e84393'],
+                borderRadius: 12,
+              }],
+            },
+            options: {
+              ...sharedOptions,
+              plugins: { legend: { display: false } },
+              scales: { y: { beginAtZero: true } },
+            },
+          });
+
+          new Chart(continentCtx, {
+            type: 'doughnut',
+            data: {
+              labels: chartData.continent_deaths.map((row) => row.continent),
+              datasets: [{
+                data: chartData.continent_deaths.map((row) => row.total_deaths),
+                backgroundColor: ['#6C5CE7', '#00B894', '#FD79A8', '#0984E3', '#FDCB6E', '#00cec9'],
+              }],
+            },
+            options: {
+              ...sharedOptions,
+              plugins: { legend: { position: 'bottom' } },
+            },
+          });
+
+          new Chart(trendCtx, {
+            type: 'line',
+            data: {
+              labels: chartData.recent_trend.labels,
+              datasets: [
+                {
+                  label: 'Daily new cases',
+                  data: chartData.recent_trend.cases,
+                  borderColor: '#6C5CE7',
+                  backgroundColor: 'rgba(108,92,231,0.25)',
+                  tension: 0.35,
+                  fill: true,
+                },
+                {
+                  label: 'Daily new deaths',
+                  data: chartData.recent_trend.deaths,
+                  borderColor: '#d63031',
+                  backgroundColor: 'rgba(214,48,49,0.2)',
+                  tension: 0.35,
+                  fill: true,
+                },
+              ],
+            },
+            options: {
+              ...sharedOptions,
+              plugins: { legend: { position: 'bottom' } },
+            },
+          });
+        }
+      });
+    </script>
+  </body>
+</html>

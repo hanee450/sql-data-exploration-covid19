@@ -1,0 +1,881 @@
+/* ==========================================================================
+   COVID-19 Dashboard — refined stylesheet
+   Improvements over the original:
+   - CSS custom properties for consistent spacing/color/radius (easier to tune)
+   - Summary cards use flexible min-widths instead of a fixed 220px, so they
+     never collide or get clipped at odd viewport widths
+   - Clear elevation system (rest / hover) applied consistently to cards
+   - Keyboard focus states (was completely missing before)
+   - Subtle entrance motion + respects prefers-reduced-motion
+   - Sidebar collapses cleanly instead of just adding margin on mobile
+   - Table gets sticky header + zebra striping for scannability
+   ========================================================================== */
+
+:root {
+  /* color tokens */
+  --bg: #0c1220;
+  --surface: rgba(255, 255, 255, 0.04);
+  --surface-strong: rgba(255, 255, 255, 0.07);
+  --border: rgba(255, 255, 255, 0.08);
+  --text: #f8fafc;
+  --text-muted: #94a3b8;
+  --text-subtle: #cbd5e1;
+
+  --accent-purple: #6c5ce7;
+  --accent-purple-soft: #a29bfe;
+  --accent-red: #d63031;
+  --accent-red-soft: #ff7675;
+  --accent-blue: #0984e3;
+  --accent-blue-soft: #74b9ff;
+  --accent-teal: #00b894;
+  --accent-teal-soft: #00cec9;
+
+  /* spacing scale */
+  --space-1: 0.5rem;
+  --space-2: 0.75rem;
+  --space-3: 1rem;
+  --space-4: 1.5rem;
+  --space-5: 2rem;
+
+  /* shape */
+  --radius-sm: 0.9rem;
+  --radius-md: 1.25rem;
+  --radius-lg: 1.75rem;
+  --radius-pill: 9999px;
+
+  /* elevation */
+  --shadow-rest: 0 8px 20px rgba(0, 0, 0, 0.14);
+  --shadow-hover: 0 20px 40px rgba(0, 0, 0, 0.22);
+
+  --content-max: 980px;
+  --transition: 180ms ease;
+}
+
+* {
+  box-sizing: border-box;
+}
+
+body {
+  margin: 0;
+  font-family: Inter, system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
+  background: var(--bg);
+  color: var(--text);
+}
+
+/* Respect reduced-motion users first, before any animation is declared */
+@media (prefers-reduced-motion: reduce) {
+  *, *::before, *::after {
+    animation-duration: 0.01ms !important;
+    animation-iteration-count: 1 !important;
+    transition-duration: 0.01ms !important;
+    scroll-behavior: auto !important;
+  }
+}
+
+:focus-visible {
+  outline: 2px solid var(--accent-blue-soft);
+  outline-offset: 2px;
+  border-radius: var(--radius-sm);
+}
+
+.page-shell {
+  min-height: 100vh;
+  padding: 0 1rem;
+}
+
+/* -------------------------------- Topbar -------------------------------- */
+
+.topbar {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: var(--space-3);
+  padding: var(--space-3) var(--space-4);
+  background: linear-gradient(135deg, #0f172a, #1d2a4f);
+  border-bottom: 1px solid var(--border);
+  flex-wrap: wrap;
+}
+
+.nav-brand {
+  display: flex;
+  align-items: flex-start;
+  flex-direction: column;
+  gap: 0.6rem;
+  max-width: 260px;
+}
+
+.brand-badge {
+  display: inline-flex;
+  padding: 0.45rem 0.75rem;
+  border-radius: var(--radius-pill);
+  background: var(--accent-purple);
+  color: white;
+  font-weight: 700;
+  font-size: 0.9rem;
+  letter-spacing: 0.01em;
+}
+
+.topbar h1 {
+  margin: 0;
+  font-size: clamp(1.2rem, 1.6vw, 1.6rem);
+}
+
+.topbar p {
+  margin: 0.25rem 0 0;
+  color: var(--text-muted);
+  font-size: 0.9rem;
+}
+
+.top-nav {
+  display: flex;
+  gap: var(--space-2);
+  flex-wrap: wrap;
+}
+
+.nav-link {
+  padding: 0.75rem 1rem;
+  border-radius: var(--radius-pill);
+  background: rgba(255, 255, 255, 0.08);
+  color: #e2e8f0;
+  font-weight: 600;
+  text-decoration: none;
+  transition: background var(--transition), color var(--transition), transform var(--transition);
+}
+
+.nav-link.active,
+.nav-link:hover {
+  background: var(--accent-blue);
+  color: white;
+}
+
+.nav-link:active {
+  transform: translateY(1px);
+}
+
+/* ------------------------------ Layout grid ------------------------------ */
+
+.dashboard-shell {
+  display: grid;
+  grid-template-columns: 240px minmax(0, 1fr); /* minmax(0,1fr) stops the
+     main column from being pushed wider than the viewport by its children,
+     which is what caused the right-edge clipping in the screenshot */
+  gap: var(--space-5);
+  align-items: start;
+  width: 100%;
+  max-width: 1440px;
+  margin: 0 auto;
+}
+
+.dashboard-sidebar {
+  padding: var(--space-3);
+  background: var(--surface);
+  border: 1px solid var(--border);
+  border-radius: var(--radius-md);
+  margin: var(--space-4) 0;
+  position: sticky;
+  top: 1rem;
+  align-self: start;
+  max-height: calc(100vh - 2rem);
+  overflow: auto;
+}
+
+.filter-group {
+  display: grid;
+  gap: var(--space-3);
+}
+
+.filter-group h3 {
+  margin: 0;
+  font-size: 1.2rem;
+}
+
+.filter-group label {
+  font-size: 0.95rem;
+  color: var(--text-subtle);
+}
+
+.filter-group select,
+.filter-group input {
+  width: 100%;
+  padding: 0.9rem 1rem;
+  border-radius: var(--radius-sm);
+  background: rgba(15, 23, 42, 0.9);
+  border: 1px solid rgba(255, 255, 255, 0.12);
+  color: var(--text);
+  transition: border-color var(--transition);
+}
+
+.filter-group select:focus,
+.filter-group input:focus {
+  border-color: var(--accent-blue-soft);
+}
+
+.date-pair {
+  display: grid;
+  gap: var(--space-2);
+}
+
+.quick-actions {
+  display: grid;
+  gap: var(--space-2);
+}
+
+.quick-actions .button {
+  width: 100%;
+}
+
+/* -------------------------------- Buttons -------------------------------- */
+
+.button {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  padding: 0.95rem 1.25rem;
+  border: none;
+  border-radius: var(--radius-pill);
+  cursor: pointer;
+  font-weight: 700;
+  font-size: 0.95rem;
+  transition: transform var(--transition), box-shadow var(--transition), filter var(--transition);
+}
+
+.button:hover {
+  transform: translateY(-1px);
+  filter: brightness(1.05);
+}
+
+.button:active {
+  transform: translateY(0);
+}
+
+.button:disabled {
+  opacity: 0.5;
+  cursor: not-allowed;
+  transform: none;
+}
+
+.button-primary {
+  background: linear-gradient(135deg, var(--accent-teal), var(--accent-teal-soft));
+  color: #fff;
+  box-shadow: var(--shadow-rest);
+}
+
+.button-primary:hover {
+  box-shadow: var(--shadow-hover);
+}
+
+/* -------------------------------- Main area ------------------------------ */
+
+.dashboard-main {
+  padding: var(--space-4) 0 var(--space-5) 0;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  min-width: 0; /* required alongside minmax(0,1fr) above so long content
+     (like the table) can scroll internally instead of stretching the grid */
+}
+
+/* ------------------------------ Summary cards ----------------------------- */
+
+.summary-grid {
+  display: flex;
+  flex-wrap: wrap;
+  gap: var(--space-3);
+  margin: 0 auto var(--space-4) auto;
+  justify-content: center;
+  width: 100%;
+  max-width: var(--content-max);
+}
+
+.summary-card {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: 0.35rem;
+  padding: var(--space-3);
+  border-radius: var(--radius-md);
+  border: 1px solid rgba(255, 255, 255, 0.06);
+  box-shadow: var(--shadow-rest);
+  text-align: center;
+  overflow: hidden;
+
+  /* Flexible sizing instead of a fixed width — this is the main fix for the
+     overlap/clipping seen in the screenshot. Cards now share available
+     space evenly and wrap onto a new line instead of colliding. */
+  flex: 1 1 200px;
+  min-width: 180px;
+  max-width: 240px;
+
+  transition: transform var(--transition), box-shadow var(--transition);
+}
+
+.summary-card:hover {
+  transform: translateY(-2px);
+  box-shadow: var(--shadow-hover);
+}
+
+.summary-card span {
+  color: rgba(255, 255, 255, 0.85);
+  font-weight: 700;
+  font-size: 0.9rem;
+}
+
+.summary-card h3 {
+  margin: 0;
+  font-size: 1.7rem;
+  line-height: 1.1;
+  word-break: normal;
+  white-space: nowrap;
+}
+
+.card-purple { background: linear-gradient(135deg, var(--accent-purple), var(--accent-purple-soft)); }
+.card-red    { background: linear-gradient(135deg, var(--accent-red), var(--accent-red-soft)); }
+.card-blue   { background: linear-gradient(135deg, var(--accent-blue), var(--accent-blue-soft)); }
+.card-teal   { background: linear-gradient(135deg, var(--accent-teal), var(--accent-teal-soft)); }
+
+/* -------------------------------- Charts ---------------------------------- */
+
+.chart-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(320px, 1fr));
+  gap: var(--space-4);
+  margin-bottom: var(--space-4);
+  width: 100%;
+  max-width: var(--content-max);
+}
+
+.chart-card {
+  background: var(--surface-strong);
+  border: 1px solid var(--border);
+  border-radius: var(--radius-lg);
+  padding: var(--space-4);
+  box-shadow: var(--shadow-rest);
+  min-width: 0; /* lets any chart canvas/svg inside shrink instead of
+     forcing the grid track wider than its column */
+  transition: box-shadow var(--transition);
+}
+
+.chart-card:hover {
+  box-shadow: var(--shadow-hover);
+}
+
+.chart-card h3 {
+  margin: 0 0 var(--space-3);
+  font-size: 1.1rem;
+}
+
+/* Chart canvases/SVGs should never overflow their card */
+.chart-card canvas,
+.chart-card svg {
+  max-width: 100%;
+  height: auto;
+}
+
+/* -------------------------------- Table ----------------------------------- */
+
+.table-section {
+  background: var(--surface-strong);
+  border: 1px solid var(--border);
+  border-radius: var(--radius-lg);
+  padding: var(--space-4);
+  width: 100%;
+  max-width: var(--content-max);
+}
+
+.table-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: var(--space-3);
+  margin-bottom: var(--space-3);
+  flex-wrap: wrap;
+}
+
+.table-header h3 {
+  margin: 0;
+}
+
+.table-header input {
+  max-width: 260px;
+  border-radius: var(--radius-pill);
+  padding: 0.6rem 1rem;
+  background: rgba(15, 23, 42, 0.9);
+  border: 1px solid rgba(255, 255, 255, 0.12);
+  color: var(--text);
+}
+
+.table-wrapper {
+  overflow-x: auto;
+  border-radius: var(--radius-sm);
+}
+
+table {
+  width: 100%;
+  border-collapse: collapse;
+  color: var(--text);
+}
+
+th, td {
+  text-align: left;
+  padding: 0.95rem 1rem;
+  white-space: nowrap;
+}
+
+th {
+  background: rgba(255, 255, 255, 0.08);
+  color: var(--text-subtle);
+  position: sticky;
+  top: 0;
+}
+
+tr {
+  border-bottom: 1px solid var(--border);
+}
+
+tr:nth-child(even) {
+  background: rgba(255, 255, 255, 0.02);
+}
+
+tr:hover {
+  background: rgba(255, 255, 255, 0.06);
+}
+
+/* -------------------------------- Motion ----------------------------------- */
+
+@keyframes rise-in {
+  from {
+    opacity: 0;
+    transform: translateY(8px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+.summary-card,
+.chart-card,
+.table-section {
+  animation: rise-in 320ms ease both;
+}
+
+.chart-grid .chart-card:nth-child(2) { animation-delay: 60ms; }
+.chart-grid .chart-card:nth-child(3) { animation-delay: 120ms; }
+.chart-grid .chart-card:nth-child(4) { animation-delay: 180ms; }
+
+/* ------------------------------ Responsive --------------------------------- */
+
+@media (max-width: 1100px) {
+  .dashboard-shell {
+    grid-template-columns: 1fr;
+  }
+}
+
+@media (max-width: 720px) {
+  .topbar {
+    flex-direction: column;
+    align-items: flex-start;
+  }
+  .top-nav {
+    width: 100%;
+  }
+  .dashboard-sidebar {
+    margin: 1rem 0;
+    position: static; /* sticky sidebars on short mobile viewports tend to
+       eat the whole screen; drop it back into normal flow below ~720px */
+    max-height: none;
+  }
+  .dashboard-main {
+    padding: 1.25rem 0;
+  }
+  .summary-card {
+    flex: 1 1 45%;
+    min-width: 140px;
+  }
+  .table-header input {
+    max-width: 100%;
+    width: 100%;
+  }
+}
+
+@media (max-width: 420px) {
+  .summary-card {
+    flex: 1 1 100%;
+  }
+}
+
+/* ==========================================================================
+   Landing page — hero, info cards, question grid, highlights, footer
+   Reuses the same design tokens defined at the top of this file.
+   ========================================================================== */
+
+main {
+  width: 100%;
+  max-width: 1200px;
+  margin: 0 auto;
+  padding: 0 0 var(--space-5) 0;
+}
+
+/* -------------------------------- Hero ------------------------------------ */
+
+.hero-panel {
+  display: grid;
+  grid-template-columns: 1.1fr 0.9fr;
+  gap: var(--space-5);
+  align-items: center;
+  padding: var(--space-5);
+  margin-top: var(--space-4);
+  border-radius: var(--radius-lg);
+  border: 1px solid var(--border);
+  background: linear-gradient(160deg, rgba(108, 92, 231, 0.16), rgba(12, 18, 32, 0.4) 60%);
+  position: relative;
+  overflow: hidden;
+}
+
+/* signature element: a soft ambient glow behind the hero, referencing the
+   "rolling case count" visual from the source dataset without being a
+   literal chart */
+.section-glow::before {
+  content: "";
+  position: absolute;
+  inset: -40% -20% auto auto;
+  width: 60%;
+  height: 140%;
+  background: radial-gradient(circle, rgba(0, 206, 201, 0.25), transparent 70%);
+  filter: blur(10px);
+  pointer-events: none;
+}
+
+.hero-copy {
+  position: relative;
+  z-index: 1;
+}
+
+.eyebrow {
+  display: inline-block;
+  margin: 0 0 var(--space-2);
+  padding: 0.35rem 0.85rem;
+  border-radius: var(--radius-pill);
+  background: rgba(255, 255, 255, 0.08);
+  color: var(--accent-teal-soft);
+  font-size: 0.8rem;
+  font-weight: 700;
+  letter-spacing: 0.06em;
+  text-transform: uppercase;
+}
+
+.hero-copy h2 {
+  margin: 0 0 var(--space-2);
+  font-size: clamp(1.8rem, 3.4vw, 2.6rem);
+  line-height: 1.15;
+}
+
+.hero-copy > p:not(.eyebrow) {
+  margin: 0 0 var(--space-4);
+  color: var(--text-subtle);
+  max-width: 46ch;
+  line-height: 1.6;
+}
+
+.hero-actions {
+  display: flex;
+  gap: var(--space-2);
+  flex-wrap: wrap;
+}
+
+.button-secondary {
+  background: rgba(255, 255, 255, 0.08);
+  color: var(--text);
+  border: 1px solid rgba(255, 255, 255, 0.16);
+}
+
+.button-secondary:hover {
+  background: rgba(255, 255, 255, 0.14);
+}
+
+.hero-stats {
+  position: relative;
+  z-index: 1;
+  display: grid;
+  grid-template-columns: repeat(2, 1fr);
+  gap: var(--space-3);
+}
+
+.stat-card {
+  padding: var(--space-3);
+  border-radius: var(--radius-md);
+  box-shadow: var(--shadow-rest);
+  min-width: 0;
+  transition: transform var(--transition), box-shadow var(--transition);
+}
+
+.stat-card:hover {
+  transform: translateY(-2px);
+  box-shadow: var(--shadow-hover);
+}
+
+.stat-card p {
+  margin: 0 0 0.35rem;
+  color: rgba(255, 255, 255, 0.85);
+  font-weight: 700;
+  font-size: 0.85rem;
+}
+
+.stat-card h3 {
+  margin: 0;
+  font-size: clamp(1.3rem, 2vw, 1.7rem);
+  line-height: 1.1;
+  /* tabular-nums keeps the animated counter from jittering in width as
+     digits change */
+  font-variant-numeric: tabular-nums;
+}
+
+.stat-purple { background: linear-gradient(135deg, var(--accent-purple), var(--accent-purple-soft)); }
+.stat-red    { background: linear-gradient(135deg, var(--accent-red), var(--accent-red-soft)); }
+.stat-teal   { background: linear-gradient(135deg, var(--accent-teal), var(--accent-teal-soft)); }
+.stat-yellow { background: linear-gradient(135deg, #fdcb6e, #e17055); }
+
+/* -------------------------------- Info grid -------------------------------- */
+
+.info-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
+  gap: var(--space-4);
+  margin-top: var(--space-5);
+}
+
+.info-card {
+  padding: var(--space-4);
+  border-radius: var(--radius-lg);
+  border: 1px solid var(--border);
+  box-shadow: var(--shadow-rest);
+  min-width: 0;
+}
+
+.info-card h3 {
+  margin: 0 0 var(--space-2);
+}
+
+.info-card p {
+  margin: 0 0 var(--space-2);
+  color: rgba(255, 255, 255, 0.85);
+  line-height: 1.6;
+}
+
+.info-card ul {
+  margin: 0;
+  padding-left: 1.1rem;
+  color: rgba(255, 255, 255, 0.85);
+  line-height: 1.8;
+}
+
+.card-blue {
+  background: linear-gradient(160deg, rgba(9, 132, 227, 0.22), rgba(255, 255, 255, 0.03));
+}
+
+.card-gradient {
+  background: linear-gradient(160deg, rgba(108, 92, 231, 0.22), rgba(0, 184, 148, 0.12));
+}
+
+.skill-pill {
+  display: inline-flex;
+  margin: 0 0.5rem 0.5rem 0;
+  padding: 0.5rem 0.9rem;
+  border-radius: var(--radius-pill);
+  background: rgba(255, 255, 255, 0.1);
+  font-size: 0.85rem;
+  font-weight: 600;
+}
+
+/* ------------------------------ Questions grid ------------------------------ */
+
+.questions-section {
+  margin-top: var(--space-5);
+}
+
+.questions-section h2 {
+  margin: 0 0 var(--space-4);
+  font-size: clamp(1.4rem, 2.2vw, 1.9rem);
+}
+
+.question-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));
+  gap: var(--space-3);
+}
+
+.question-card {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-2);
+  padding: var(--space-3);
+  border-radius: var(--radius-md);
+  box-shadow: var(--shadow-rest);
+  min-width: 0;
+  transition: transform var(--transition), box-shadow var(--transition);
+}
+
+.question-card:hover {
+  transform: translateY(-2px);
+  box-shadow: var(--shadow-hover);
+}
+
+/* the number is structural here — it tells the reader these are five
+   distinct, independently-answerable questions, not a sequence to follow
+   in order, so it's kept visually secondary to the question itself */
+.question-card span {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 1.75rem;
+  height: 1.75rem;
+  border-radius: 50%;
+  background: rgba(255, 255, 255, 0.18);
+  font-size: 0.85rem;
+  font-weight: 700;
+}
+
+.question-card h4 {
+  margin: 0;
+  font-size: 1.05rem;
+  line-height: 1.4;
+}
+
+/* -------------------------------- Highlights -------------------------------- */
+
+.highlight-section {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
+  gap: var(--space-4);
+  margin-top: var(--space-5);
+}
+
+.highlight-card {
+  padding: var(--space-4);
+  border-radius: var(--radius-lg);
+  border: 1px solid var(--border);
+  background: linear-gradient(160deg, rgba(9, 132, 227, 0.16), rgba(108, 92, 231, 0.1));
+  box-shadow: var(--shadow-rest);
+}
+
+.highlight-card.highlight-soft {
+  background: var(--surface);
+}
+
+.highlight-card h3 {
+  margin: 0 0 var(--space-2);
+}
+
+.highlight-card p {
+  margin: 0;
+  color: rgba(255, 255, 255, 0.85);
+  line-height: 1.6;
+}
+
+/* -------------------------------- Footer ------------------------------------ */
+
+.footer-panel {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: var(--space-3);
+  flex-wrap: wrap;
+  padding: var(--space-4) 0 var(--space-5);
+  margin-top: var(--space-4);
+  border-top: 1px solid var(--border);
+}
+
+.footer-panel p {
+  margin: 0;
+  color: var(--text-subtle);
+}
+
+.footer-note {
+  font-size: 0.85rem;
+  color: var(--text-muted) !important;
+}
+
+.tech-grid {
+  display: flex;
+  gap: var(--space-2);
+  flex-wrap: wrap;
+}
+
+.tech-pill {
+  padding: 0.5rem 0.9rem;
+  border-radius: var(--radius-pill);
+  background: rgba(255, 255, 255, 0.08);
+  font-size: 0.85rem;
+  font-weight: 600;
+}
+
+/* ------------------------------ Landing responsive --------------------------- */
+
+@media (max-width: 900px) {
+  .hero-panel {
+    grid-template-columns: 1fr;
+  }
+  .hero-stats {
+    grid-template-columns: repeat(2, 1fr);
+  }
+}
+
+@media (max-width: 480px) {
+  .hero-stats {
+    grid-template-columns: 1fr 1fr;
+  }
+  .footer-panel {
+    flex-direction: column;
+    align-items: flex-start;
+  }
+}
+
+/* ==========================================================================
+   Loading overlay + search empty-state
+   Referenced by dashboard-improved.html's JS (loadingOverlay, noResults)
+   but had no matching CSS before — the overlay would never actually be
+   visible when triggered.
+   ========================================================================== */
+
+.loading-overlay {
+  position: fixed;
+  inset: 0;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  background: rgba(12, 18, 32, 0.6);
+  backdrop-filter: blur(2px);
+  opacity: 0;
+  pointer-events: none;
+  transition: opacity var(--transition);
+  z-index: 50;
+}
+
+.loading-overlay.active {
+  opacity: 1;
+  pointer-events: auto;
+}
+
+.loading-box {
+  padding: var(--space-3) var(--space-4);
+  border-radius: var(--radius-md);
+  background: var(--surface-strong);
+  border: 1px solid var(--border);
+  color: var(--text);
+  font-weight: 700;
+  box-shadow: var(--shadow-hover);
+}
+
+.no-results {
+  padding: var(--space-3);
+  text-align: center;
+  color: var(--text-muted);
+}
+
+/* Chart.js needs an explicit container height when maintainAspectRatio is
+   false (used here so charts fill their card instead of the default 1:1
+   box that made the doughnut/line charts look cramped). */
+.chart-card canvas {
+  max-height: 280px;
+}

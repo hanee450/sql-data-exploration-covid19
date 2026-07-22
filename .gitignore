@@ -1,0 +1,5 @@
+__pycache__/
+*.pyc
+covid_new_cases_model.joblib
+.env
+venv/

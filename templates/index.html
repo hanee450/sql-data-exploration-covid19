@@ -1,0 +1,133 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>COVID-19 Prediction</title>
+    <link rel="stylesheet" href="/static/prediction.css" />
+  </head>
+  <body>
+    <header>
+      <div class="header-inner">
+        <div>
+          <h1>COVID-19 New Cases Prediction</h1>
+          <p>Estimate daily new cases using recent metrics from the dataset and the trained model.</p>
+        </div>
+        <nav>
+          <a href="/predict" class="active">Predict</a>
+          <a href="/dashboard">Dashboard</a>
+          <a href="/">Home</a>
+        </nav>
+      </div>
+    </header>
+    <main>
+      <section class="hero-card card">
+        <div>
+          <h2 class="section-title">Predict COVID-19 new cases by country</h2>
+          <p>Use real country presets and historical metrics to get a realistic estimate of daily new COVID-19 cases.</p>
+        </div>
+        <div class="hero-badge">AI-powered prediction</div>
+      </section>
+
+      <section class="split-grid">
+        <div class="card form-panel">
+          <h2 class="section-title">Enter COVID-19 metrics</h2>
+          <form method="POST">
+            <div class="field-group">
+              <label for="country">Select country</label>
+              <select id="country" name="country" onchange="applyPreset()">
+                {% for country in countries %}
+                <option value="{{ country }}" {% if values.country == country %}selected{% endif %}>{{ country }}</option>
+                {% endfor %}
+              </select>
+            </div>
+            <div class="field-group">
+              <label for="location">Location</label>
+              <input id="location" name="location" value="{{ values.location }}" readonly />
+            </div>
+            <div class="field-group">
+              <label for="continent">Continent</label>
+              <select id="continent" name="continent">
+                {% for continent in continents %}
+                <option value="{{ continent }}" {% if values.continent == continent %}selected{% endif %}>{{ continent }}</option>
+                {% endfor %}
+              </select>
+            </div>
+            <div class="field-group">
+              <label for="population">Population</label>
+              <input id="population" name="population" type="number" value="{{ values.population }}" placeholder="1400000000" />
+            </div>
+            <div class="field-group">
+              <label for="total_cases">Total cases</label>
+              <input id="total_cases" name="total_cases" type="number" value="{{ values.total_cases }}" placeholder="45000000" />
+            </div>
+            <div class="field-group">
+              <label for="total_deaths">Total deaths</label>
+              <input id="total_deaths" name="total_deaths" type="number" value="{{ values.total_deaths }}" placeholder="530000" />
+            </div>
+            <div class="field-group full-width">
+              <label for="date">Date</label>
+              <input id="date" name="date" type="date" value="{{ values.date }}" />
+            </div>
+            <button type="submit">Predict new cases</button>
+          </form>
+          <script>
+            const presets = {{ presets|safe }};
+            function applyPreset() {
+              const country = document.getElementById('country').value;
+              if (presets[country]) {
+                const preset = presets[country];
+                document.getElementById('continent').value = preset.continent || 'Unknown';
+                document.getElementById('population').value = preset.population || 0;
+                document.getElementById('total_cases').value = preset.total_cases || 0;
+                document.getElementById('total_deaths').value = preset.total_deaths || 0;
+                document.getElementById('location').value = country;
+              }
+            }
+            window.onload = applyPreset;
+          </script>
+        </div>
+
+        <div class="card summary-panel">
+          {% if result is not none %}
+          <div class="card output-card">
+            <h2>Prediction result</h2>
+            <p>Estimated new cases for <strong>{{ values.location }}</strong> on <strong>{{ values.date }}</strong>:</p>
+            <p class="prediction-value">{{ "{:,}".format(result|int) }}</p>
+          </div>
+          {% else %}
+          <div class="card output-card">
+            <h2>How it works</h2>
+            <p>Select a country, adjust the metrics if needed, and click predict to see the model estimate daily new COVID-19 cases.</p>
+          </div>
+          {% endif %}
+
+          <div class="card stats-panel">
+            <h2>Example countries</h2>
+            <ul>
+              <li><strong>India</strong> – population 1.4B, 45M cases</li>
+              <li><strong>United States</strong> – population 331M, 70M cases</li>
+              <li><strong>Brazil</strong> – population 213M, 30M cases</li>
+            </ul>
+          </div>
+
+          {% if error %}
+          <div class="card output-card error-card">
+            <h2>Error</h2>
+            <p>{{ error }}</p>
+          </div>
+          {% endif %}
+        </div>
+      </section>
+
+        {% if error %}
+        <div class="card output-card">
+          <h2>Error</h2>
+          <p>{{ error }}</p>
+        </div>
+        {% endif %}
+      </section>
+    </main>
+    <footer>Prediction app for COVID-19 new case estimates.</footer>
+  </body>
+</html>

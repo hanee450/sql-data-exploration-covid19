@@ -3,65 +3,161 @@
   <head>
     <meta charset="UTF-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-    <title>COVID-19 SQL Data Exploration</title>
-    <style>
-      body { font-family: Arial, sans-serif; margin: 0; padding: 0; background: #f7f9fb; color: #111; }
-      header { background: #1f2937; color: #fff; padding: 2rem 1.5rem; }
-      main { max-width: 900px; margin: 2rem auto; padding: 0 1.5rem; }
-      h1, h2 { margin-top: 0; }
-      .card { background: #fff; border-radius: 12px; box-shadow: 0 12px 24px rgba(15,23,42,0.08); padding: 1.5rem; margin-bottom: 1.5rem; }
-      a { color: #2563eb; text-decoration: none; }
-      a:hover { text-decoration: underline; }
-      .grid { display: grid; gap: 1rem; grid-template-columns: repeat(auto-fit, minmax(240px, 1fr)); }
-      .badge { display: inline-block; padding: 0.25rem 0.75rem; border-radius: 999px; background: #e0f2fe; color: #0369a1; margin-right: 0.5rem; margin-bottom: 0.5rem; }
-      .screenshot { width: 100%; border-radius: 10px; border: 1px solid #d1d5db; }
-      footer { text-align: center; font-size: 0.95rem; color: #6b7280; margin: 2rem 0; }
-    </style>
+    <title>COVID-19 Data Exploration</title>
+    <link rel="stylesheet" href="styles.css" />
   </head>
   <body>
-    <header>
-      <h1>COVID-19 SQL Data Exploration</h1>
-      <p>Static project site for Render deployment. View the dataset, SQL analysis and key insights in one place.</p>
-    </header>
-    <main>
-      <section class="card">
-        <h2>About this project</h2>
-        <p>This repository contains a COVID-19 data exploration project built with SQL analysis. It includes cleaned death data, analysis scripts, and result visualizations.</p>
-        <div class="grid">
+    <div class="page-shell">
+      <header class="topbar">
+        <div class="nav-brand">
+          <span class="brand-badge">COVID-19</span>
           <div>
-            <p class="badge">Dataset</p>
-            <p><a href="Dataset/covid_deaths_clean.csv">covid_deaths_clean.csv</a></p>
-          </div>
-          <div>
-            <p class="badge">SQL Script</p>
-            <p><a href="SQL Script/Project 2 Data Exploration.sql">Project 2 Data Exploration.sql</a></p>
-          </div>
-          <div>
-            <p class="badge">Results</p>
-            <p><a href="Results/countries-highest-infection-rate.png">countries-highest-infection-rate.png</a></p>
+            <h1>Data Exploration</h1>
+            <p>Global data insights with SQL-powered analysis, visual storytelling, and dashboard exploration.</p>
           </div>
         </div>
-      </section>
-      <section class="card">
-        <h2>What you can explore</h2>
-        <ul>
-          <li>COVID-19 death and population data</li>
-          <li>SQL queries for infection rate, death counts, and global trends</li>
-          <li>Analysis of vaccination progress and pandemic impact</li>
-        </ul>
-      </section>
-      <section class="card">
-        <h2>Repository links</h2>
-        <p><a href="README.md">README.md</a> contains full project context, business questions, and insights.</p>
-        <p>The SQL script is ready to run against the included dataset.</p>
-      </section>
-      <section class="card">
-        <h2>Preview</h2>
-        <img src="Results/countries-highest-infection-rate.png" alt="Project preview" class="screenshot" />
-      </section>
-    </main>
-    <footer>
-      Render-ready static site for SQL exploration.
-    </footer>
+        <nav class="top-nav" aria-label="Primary">
+          <a href="index.html" class="nav-link active" aria-current="page">Landing</a>
+          <a href="dashboard.html" class="nav-link">Dashboard</a>
+          <a href="Dataset/covid_deaths_clean.csv" class="nav-link" download>Dataset</a>
+          <a href="SQL%20Script/Project%202%20Data%20Exploration.sql" class="nav-link" download>SQL Script</a>
+          <a href="Results/countries-highest-infection-rate.png" class="nav-link" target="_blank" rel="noopener">Results</a>
+        </nav>
+      </header>
+
+      <main>
+        <section class="hero-panel section-glow">
+          <div class="hero-copy">
+            <p class="eyebrow">SQL &middot; Data Analysis &middot; Dashboards</p>
+            <h2>COVID-19 Global Data Insights</h2>
+            <p>SQL se global COVID-19 data explore kiya gaya hai — infection rates, deaths, vaccinations, aur population-level trends visualized in a modern analytics experience.</p>
+            <div class="hero-actions">
+              <a href="dashboard.html" class="button button-primary">Explore Dashboard</a>
+              <a href="Results/countries-highest-infection-rate.png" class="button button-secondary" target="_blank" rel="noopener">View Report Preview</a>
+            </div>
+          </div>
+          <div class="hero-stats" role="group" aria-label="Global summary statistics">
+            <div class="stat-card stat-purple">
+              <p>Total Cases</p>
+              <h3 data-target="283945600" aria-live="off">0</h3>
+            </div>
+            <div class="stat-card stat-red">
+              <p>Total Deaths</p>
+              <h3 data-target="5423000">0</h3>
+            </div>
+            <div class="stat-card stat-teal">
+              <p>Total Vaccinated</p>
+              <h3 data-target="2073000000">0</h3>
+            </div>
+            <div class="stat-card stat-yellow">
+              <p>Countries Covered</p>
+              <h3 data-target="124">0</h3>
+            </div>
+          </div>
+        </section>
+
+        <section class="info-grid">
+          <article class="info-card card-blue">
+            <h3>About the Project</h3>
+            <p>Yeh project global COVID-19 data analysis ko showcase karta hai using SQL Joins, CTEs, Window Functions, Temp Tables, aur Views for clean data preparation.</p>
+            <ul>
+              <li>Infection rate insights</li>
+              <li>Continent-level death analysis</li>
+              <li>Vaccination progress tracking</li>
+            </ul>
+          </article>
+          <article class="info-card card-gradient">
+            <h3>SQL Skills Used</h3>
+            <div class="skill-pill">Joins</div>
+            <div class="skill-pill">CTEs</div>
+            <div class="skill-pill">Window Functions</div>
+            <div class="skill-pill">Temp Tables</div>
+            <div class="skill-pill">Views</div>
+          </article>
+        </section>
+
+        <section class="questions-section">
+          <h2>Key Business Questions Answered</h2>
+          <div class="question-grid">
+            <article class="question-card card-purple">
+              <span aria-hidden="true">1</span>
+              <h4>Highest infection rate countries</h4>
+            </article>
+            <article class="question-card card-red">
+              <span aria-hidden="true">2</span>
+              <h4>Highest death count countries</h4>
+            </article>
+            <article class="question-card card-teal">
+              <span aria-hidden="true">3</span>
+              <h4>Death count by continent</h4>
+            </article>
+            <article class="question-card card-blue">
+              <span aria-hidden="true">4</span>
+              <h4>Global case/death trend over time</h4>
+            </article>
+            <article class="question-card card-yellow">
+              <span aria-hidden="true">5</span>
+              <h4>Vaccination progress % by population</h4>
+            </article>
+          </div>
+        </section>
+
+        <section class="highlight-section">
+          <div class="highlight-card">
+            <h3>Modern analytics experience</h3>
+            <p>Dark accented dashboard, neon-inspired cards, responsive charts, and filter-driven insights for COVID-19 decision makers.</p>
+          </div>
+          <div class="highlight-card highlight-soft">
+            <h3>Ready for delivery</h3>
+            <p>Focus on SQL-powered insights, clean UI delivery, and a professional story for global pandemic data exploration.</p>
+          </div>
+        </section>
+      </main>
+
+      <footer class="footer-panel">
+        <div>
+          <p>Created by Honey Mishra</p>
+          <p class="footer-note">Tech stack:</p>
+        </div>
+        <div class="tech-grid">
+          <span class="tech-pill">SQL</span>
+          <span class="tech-pill">Excel</span>
+          <span class="tech-pill">Power BI</span>
+          <span class="tech-pill">Python</span>
+        </div>
+      </footer>
+    </div>
+
+    <script>
+      // Respect reduced-motion users by snapping straight to the final value
+      const prefersReducedMotion = window.matchMedia('(prefers-reduced-motion: reduce)').matches;
+
+      const counters = document.querySelectorAll('[data-target]');
+      counters.forEach((counter) => {
+        const target = +counter.getAttribute('data-target');
+
+        if (prefersReducedMotion) {
+          counter.innerText = target.toLocaleString();
+          return;
+        }
+
+        const duration = 1200; // ms, fixed duration regardless of number size
+        const start = performance.now();
+
+        const updateCount = (now) => {
+          const elapsed = now - start;
+          const progress = Math.min(elapsed / duration, 1);
+          const eased = 1 - Math.pow(1 - progress, 3); // ease-out cubic
+          const current = Math.floor(target * eased);
+          counter.innerText = current.toLocaleString();
+          if (progress < 1) {
+            requestAnimationFrame(updateCount);
+          } else {
+            counter.innerText = target.toLocaleString();
+          }
+        };
+        requestAnimationFrame(updateCount);
+      });
+    </script>
   </body>
 </html>

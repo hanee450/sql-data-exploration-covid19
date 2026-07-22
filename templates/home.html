@@ -1,0 +1,169 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>COVID-19 Country Explorer</title>
+    <link rel="stylesheet" href="/static/prediction.css" />
+  </head>
+  <body>
+    <header>
+      <div class="header-inner">
+        <div>
+          <p class="brand-label">COVID-19 Country Explorer</p>
+          <h1>Global COVID-19 Country Landing Page</h1>
+        </div>
+        <nav>
+          <a href="/" class="active">Home</a>
+          <a href="/dashboard">Dashboard</a>
+          <a href="/predict">Predict</a>
+        </nav>
+      </div>
+    </header>
+
+    <main>
+      <section class="hero-banner">
+        <div class="hero-text">
+          <p class="hero-pill">Country-focused COVID-19 analysis</p>
+          <h2>Discover the pandemic through global country insights</h2>
+          <p>Use the dataset, review SQL-driven analysis, and explore predictions for countries around the world.</p>
+          <div class="hero-buttons">
+            <a href="/dashboard" class="button button-primary">Open Dashboard</a>
+            <a href="/predict" class="button button-secondary">Go to Prediction</a>
+          </div>
+        </div>
+        <div class="hero-cards hero-stats-cards">
+          <article class="stats-card card-glow">
+            <p class="card-label">Dataset range</p>
+            <h3>{{ summary.first_date }} → {{ summary.last_date }}</h3>
+          </article>
+          <article class="stats-card card-glow card-emerald">
+            <p class="card-label">Countries</p>
+            <h3>{{ summary.countries }}</h3>
+          </article>
+          <article class="stats-card card-glow card-coral">
+            <p class="card-label">Total cases</p>
+            <h3>{{ "{:,}".format(summary.total_cases | int) }}</h3>
+          </article>
+          <article class="stats-card card-glow card-blue">
+            <p class="card-label">Total deaths</p>
+            <h3>{{ "{:,}".format(summary.total_deaths | int) }}</h3>
+          </article>
+        </div>
+        <div class="hero-cards hero-info-cards">
+          <article class="stats-card card-glow">
+            <p class="card-label">Country data</p>
+            <h3>Worldwide metrics</h3>
+            <p>View population, cases, deaths, and continent comparisons.</p>
+          </article>
+          <article class="stats-card card-glow card-emerald">
+            <p class="card-label">Data explorer</p>
+            <h3>SQL study</h3>
+            <p>Open the dataset and SQL script to explore analysis logic.</p>
+          </article>
+          <article class="stats-card card-glow card-coral">
+            <p class="card-label">Prediction model</p>
+            <h3>Interactive estimate</h3>
+            <p>Use the trained model to estimate new cases for selected countries.</p>
+          </article>
+        </div>
+      </section>
+
+      <section class="dashboard-preview-section">
+        <div class="section-heading">
+          <h2>Dashboard analytics</h2>
+          <p>Open the dashboard for interactive charts, filters, and live COVID-19 trend analysis.</p>
+        </div>
+        <div class="dashboard-preview-grid">
+          <article class="preview-card dashboard-card">
+            <h3>Interactive charts</h3>
+            <p>Visualize country-level cases, deaths, and continent summaries with a modern analytics view.</p>
+            <a href="/dashboard" class="button button-primary">Go to Dashboard</a>
+          </article>
+          <article class="preview-card dashboard-card dashboard-card-secondary">
+            <h3>Filter & compare</h3>
+            <p>Switch by continent and date range to compare pandemic performance across regions.</p>
+            <a href="/dashboard" class="button button-secondary">Launch dashboard</a>
+          </article>
+        </div>
+      </section>
+
+      <section class="country-grid">
+        <div class="section-heading">
+          <h2>Explore country themes</h2>
+          <p>Highlighting key countries and regions with vibrant data-driven styling.</p>
+        </div>
+        <div class="country-card-grid">
+          <article class="country-card india">
+            <span>India</span>
+            <p>Population: 1.4B</p>
+            <p>Key case insights and growth patterns.</p>
+          </article>
+          <article class="country-card usa">
+            <span>United States</span>
+            <p>Population: 331M</p>
+            <p>The most extensive case history in the dataset.</p>
+          </article>
+          <article class="country-card brazil">
+            <span>Brazil</span>
+            <p>Population: 213M</p>
+            <p>Major pandemic trends across South America.</p>
+          </article>
+          <article class="country-card uk">
+            <span>United Kingdom</span>
+            <p>Population: 67M</p>
+            <p>Europe-focused pandemic insights.</p>
+          </article>
+          <article class="country-card south-africa">
+            <span>South Africa</span>
+            <p>Population: 60M</p>
+            <p>Africa regional trends and comparisons.</p>
+          </article>
+          <article class="country-card australia">
+            <span>Australia</span>
+            <p>Population: 25M</p>
+            <p>Oceania insights with lower numbers.</p>
+          </article>
+        </div>
+      </section>
+
+      <section class="info-section card">
+        <div>
+          <h2>What this homepage offers</h2>
+          <ul class="list-clean colorful-list">
+            <li>Bright landing page with country-focused COVID-19 summary.</li>
+            <li>Links to dataset, result preview, and the prediction app.</li>
+            <li>Modern UI that matches the prediction interface.</li>
+            <li>Clear navigation between home and predict pages.</li>
+          </ul>
+        </div>
+        <div class="quick-links">
+          <div class="link-box">
+            <p class="badge">Dataset</p>
+            <a href="/data">Dataset</a>
+          </div>
+          <div class="link-box">
+            <p class="badge">SQL Script</p>
+            <a href="/sql">SQL Script</a>
+          </div>
+          <div class="link-box">
+            <p class="badge">Results</p>
+            <a href="/results/Countries%20Highest%20Infection%20Rate.png">Results</a>
+          </div>
+        </div>
+      </section>
+
+      <section class="preview-section">
+        <div class="preview-card card">
+          <h2>Project preview</h2>
+          <img src="/results/Countries%20Highest%20Infection%20Rate.png" alt="Project preview" class="preview" />
+        </div>
+      </section>
+    </main>
+
+    <footer>
+      <p>Landing page added successfully. Use the navigation to go to the prediction app.</p>
+    </footer>
+  </body>
+</html>
+''
