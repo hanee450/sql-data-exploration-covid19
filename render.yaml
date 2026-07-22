@@ -1,0 +1,6 @@
+services:
+  - type: static_site
+    name: covid-19-sql-data-exploration
+    env: static
+    branch: main
+    staticPublishPath: .
